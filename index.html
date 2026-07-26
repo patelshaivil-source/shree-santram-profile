@@ -45,6 +45,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);o
   filter:brightness(.92) saturate(1.04)}
 .scene::after{content:"";position:absolute;inset:0;
   background:linear-gradient(180deg,rgba(14,12,9,.55) 0%,rgba(14,12,9,.12) 32%,rgba(14,12,9,.14) 62%,rgba(14,12,9,.78) 100%)}
+.scene.dk::after{background:linear-gradient(180deg,rgba(14,12,9,.72) 0%,rgba(14,12,9,.5) 40%,rgba(14,12,9,.55) 70%,rgba(14,12,9,.85) 100%)}
 #stage{position:fixed;inset:0;width:100vw;height:100vh;z-index:2;pointer-events:none}
 .vig{position:fixed;inset:0;z-index:3;pointer-events:none;
   background:radial-gradient(120% 88% at 50% 42%, transparent 42%, rgba(6,5,3,.62) 100%)}
@@ -208,7 +209,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);o
 </div>
 
 <!-- ===== photographic scene stack (Unsplash license) ===== -->
-<div class="scene" id="sc-silk"><img src="https://images.unsplash.com/photo-1714682597753-a646ba506cee?w=1800&q=80" alt="" loading="eager"></div>
+<div class="scene dk" id="sc-silk"><img src="https://images.unsplash.com/photo-1714682597753-a646ba506cee?w=1800&q=80" alt="" loading="eager"></div>
 <div class="scene" id="sc-room"><img src="https://images.unsplash.com/photo-1781572725438-ac8c41476752?w=1600&q=80" alt="" loading="eager"></div>
 <div class="scene" id="sc-layers"><img src="https://images.unsplash.com/photo-1784315123205-34aa35249165?w=1600&q=80" alt="" loading="lazy"></div>
 <div class="scene" id="sc-macro"><img src="https://images.unsplash.com/photo-1714682597753-a646ba506cee?w=1800&q=80" alt="" loading="lazy"></div>
@@ -351,7 +352,7 @@ function prog(){const d=document.documentElement;return clamp(scrollY/((d.scroll
 
 /* ============ CINEMATIC PHOTO SCENES — scrubbed crossfades & slow pans ============ */
 const SCENES=[
-  {el:document.getElementById('sc-silk'),  a:0.00,b:0.001,c:0.06,d:0.16, zoom:[1.15,1.02],y:[0,-3]},
+  {el:document.getElementById('sc-silk'),  a:-0.02,b:0.0,c:0.06,d:0.16, zoom:[1.15,1.02],y:[0,-3]},
   {el:document.getElementById('sc-room'),  a:0.06,b:0.15,c:0.30,d:0.40, zoom:[1.14,1.0],y:[4,-4]},
   {el:document.getElementById('sc-layers'),a:0.30,b:0.40,c:0.52,d:0.60, zoom:[1.16,1.02],y:[3,-3]},
   {el:document.getElementById('sc-macro'), a:0.52,b:0.60,c:0.72,d:0.80, zoom:[1.05,1.3],y:[-2,2]},
@@ -372,7 +373,18 @@ function updateScenes(p){
   const cv=document.getElementById('stage');
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(typeof THREE==='undefined')return;
-  let R;try{R=new THREE.WebGLRenderer({canvas:cv,alpha:true,antialias:true})}catch(e){return}
+  let R=null,tries=0;
+  function makeR(){
+    try{R=new THREE.WebGLRenderer({canvas:cv,alpha:true,antialias:true,powerPreference:'high-performance'});return true}
+    catch(e){R=null;return false}
+  }
+  function waitR(cb){
+    if(makeR())return cb();
+    if(++tries>6)return;
+    setTimeout(()=>waitR(cb),900);
+  }
+  waitR(start);
+  function start(){
   R.setPixelRatio(Math.min(devicePixelRatio,2));
   R.outputEncoding=THREE.sRGBEncoding;
   R.toneMapping=THREE.ACESFilmicToneMapping;
@@ -386,7 +398,7 @@ function updateScenes(p){
   function fabricTex(){
     const c=document.createElement('canvas');c.width=c.height=1024;const g=c.getContext('2d');
     const gr=g.createLinearGradient(0,0,1024,1024);
-    gr.addColorStop(0,'#f4e0be');gr.addColorStop(.55,'#e6c491');gr.addColorStop(1,'#cfa25e');
+    gr.addColorStop(0,'#e8a463');gr.addColorStop(.55,'#cf8038');gr.addColorStop(1,'#a95f1e');
     g.fillStyle=gr;g.fillRect(0,0,1024,1024);
     for(let y=0;y<1024;y+=4){g.globalAlpha=(y%8?0.09:0.045);g.fillStyle=y%8?'#6b5124':'#fff';g.fillRect(0,y,1024,2)}
     for(let x=0;x<1024;x+=4){g.globalAlpha=(x%8?0.055:0.03);g.fillStyle=x%8?'#6b5124':'#fff';g.fillRect(x,0,2,1024)}
@@ -447,6 +459,7 @@ function updateScenes(p){
     }
     R.render(scene,cam);
   })();
+  }
 })();
 
 /* ============ MASTER SCROLL LOOP ============ */
