@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Vineet Halvawala — Shree Santram Silk Mills LLP</title>
+<meta name="description" content="Premium microfiber fabrics for bedsheets, duvets, pillows & quilts. Micro peach, embossed & down-proof — widths up to 112″. Export-ready.">
+<meta name="theme-color" content="#faf5ea">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Montserrat:wght@300;400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<style>
+:root{
+  --deep:#fffdf8;
+  --bg:#faf5ea;
+  --elev:#ffffff;
+  --ink:#2b2313;          /* warm dark ink on cream */
+  --dim:#6b614c;          /* 5.6:1 on cream, 4.1:1 over fabric */
+  --gold:#7d5a0e;         /* 5.8:1 — safe for small-caps labels */
+  --gold-2:#6f4e0b;       /* 7.0:1 — italic headings & emphasis */
+  --gold-3:#c99b3f;       /* decorative only (rules, glows) */
+  --gold-cta:#7a5a10;     /* CTA surface, 6.4:1 with white text */
+  --line:rgba(43,35,19,.22);
+  --mono:'JetBrains Mono',monospace;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Montserrat',sans-serif;
+  background:
+    radial-gradient(60% 42% at 82% 0%, rgba(201,155,63,.16), transparent 60%),
+    radial-gradient(50% 40% at 0% 30%, rgba(217,166,72,.10), transparent 60%),
+    linear-gradient(180deg,#fffdf8 0%,#f6efe0 55%,#fbf7ec 100%);
+  background-attachment:fixed;
+  color:var(--ink);overflow-x:hidden;cursor:auto}
+::selection{background:var(--gold);color:#fff}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+
+/* ================= PRELOADER ================= */
+#pre{position:fixed;inset:0;z-index:400;background:var(--bg);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:26px;transition:opacity 1s var(--ease),visibility 1s}
+#pre.off{opacity:0;visibility:hidden}
+#pre .m{font-family:'Cormorant',serif;font-size:32px;letter-spacing:2px}
+#pre .m i{color:var(--gold-2)}
+#pre .th{width:180px;height:1px;background:var(--line);position:relative;overflow:hidden}
+#pre .th i{position:absolute;inset:0;width:0;background:linear-gradient(90deg,transparent,var(--gold-2))}
+#pre .p{font-family:var(--mono);font-size:9.5px;letter-spacing:4px;color:var(--dim)}
+
+/* ================= ATMOSPHERE ================= */
+#stage{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none}
+.vig{position:fixed;inset:0;z-index:2;pointer-events:none;
+  background:radial-gradient(115% 85% at 50% 46%, transparent 46%, rgba(214,196,158,.35) 100%)}
+.grain{position:fixed;inset:0;z-index:3;pointer-events:none;opacity:.22;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='130' height='130'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.05'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='130' height='130' filter='url(%23n)'/%3E%3C/svg%3E")}
+#bar{position:fixed;top:0;left:0;height:2.5px;width:0;z-index:60;background:linear-gradient(90deg,var(--gold-3),var(--gold-cta));box-shadow:0 0 14px rgba(201,155,63,.9)}
+.hud{position:fixed;z-index:50;font-family:var(--mono);font-size:8.5px;letter-spacing:3px;
+  text-transform:uppercase;color:var(--dim);pointer-events:none}
+.hud.a{top:16px;left:18px}.hud.b{top:16px;right:18px;text-align:right}
+
+/* custom cursor (fine pointers only) */
+#cur{position:fixed;z-index:500;width:14px;height:14px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,rgba(168,120,26,.85),rgba(168,120,26,0) 70%);
+  mix-blend-mode:multiply;transform:translate(-50%,-50%);transition:width .25s var(--ease),height .25s var(--ease);display:none}
+#cur.big{width:52px;height:52px}
+@media(pointer:fine){#cur{display:block}}
+
+.frame{position:relative;z-index:10;max-width:660px;margin:0 auto;padding:0 26px 150px}
+
+/* ================= CHAPTERS ================= */
+.ch{min-height:135svh;display:flex;flex-direction:column;justify-content:flex-start;position:relative;padding:14svh 0 0}
+.ch.mid{justify-content:center;padding:0}
+.ch.end{min-height:150svh}
+.ch-tag{font-family:var(--mono);font-size:9.5px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);
+  display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.ch-tag::after{content:"";width:44px;height:1px;background:linear-gradient(90deg,var(--gold-3),transparent)}
+.ch h2,.ch .h1{font-family:'Cormorant',serif;font-weight:500;line-height:1.02;letter-spacing:.5px;
+  font-size:clamp(42px,11vw,76px);text-shadow:0 2px 26px rgba(255,253,248,.95),0 1px 3px rgba(255,253,248,.8)}
+.ch h2 i,.ch .h1 i{font-style:italic;color:var(--gold-2)}
+.ch .sub{margin-top:20px;max-width:350px;font-size:13.5px;font-weight:400;line-height:1.8;color:var(--dim);
+  background:rgba(255,253,248,.62);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+  padding:16px 18px;border-radius:3px;border:1px solid rgba(43,35,19,.08);
+  box-shadow:0 8px 28px rgba(94,74,32,.10)}
+.ch .sub b{color:var(--ink);font-weight:600}
+.ticket{margin-top:28px;display:inline-flex;flex-direction:column;border-left:2px solid var(--gold);padding:14px 18px;
+  background:rgba(255,253,248,.62);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+  border-radius:0 3px 3px 0;box-shadow:0 8px 28px rgba(94,74,32,.10)}
+.ticket span{font-family:var(--mono);font-size:9.5px;letter-spacing:2.5px;text-transform:uppercase;color:var(--dim);padding:5px 0}
+.ticket span b{color:var(--gold-2);font-weight:400}
+
+/* hero */
+.hero{text-align:center;align-items:center;min-height:150svh}
+.hero .kick{font-family:var(--mono);font-size:9.5px;letter-spacing:5px;text-transform:uppercase;color:var(--gold)}
+.hero .h1 .row2{display:block;font-style:italic;color:var(--gold-2)}
+.hero .llp{font-family:'Montserrat',sans-serif;font-weight:300;font-size:.22em;letter-spacing:9px;color:var(--dim);
+  text-transform:uppercase;display:block;margin-top:14px}
+.hero .tag{margin:26px auto 0;max-width:300px;font-family:'Cormorant',serif;font-style:italic;
+  font-size:19px;color:#6e6250;line-height:1.5}
+.hero .cue{margin-top:8svh;font-family:var(--mono);font-size:8.5px;letter-spacing:4px;text-transform:uppercase;color:var(--dim);
+  display:flex;flex-direction:column;align-items:center;gap:10px}
+.hero .cue::after{content:"";width:1px;height:46px;background:linear-gradient(180deg,var(--gold-3),transparent);
+  animation:cue 2s var(--ease) infinite}
+@keyframes cue{0%{transform:scaleY(.15);transform-origin:top;opacity:0}40%{transform:scaleY(1);opacity:1}100%{transform:scaleY(.15);transform-origin:bottom;opacity:0}}
+
+/* quality act — right aligned */
+.ch.qual{align-items:flex-end;text-align:right}
+.ch.qual .ch-tag{flex-direction:row-reverse}
+.ch.qual .ch-tag::after{background:linear-gradient(270deg,var(--gold),transparent)}
+.ch.qual .sub{margin-left:auto}
+.ch.qual .ticket{border-left:none;border-right:2px solid var(--gold);border-radius:3px 0 0 3px}
+
+/* range list */
+.range{margin-top:34px;border-top:1px solid var(--line)}
+.rrow{display:grid;grid-template-columns:52px 1fr;gap:16px;padding:21px 4px;border-bottom:1px solid var(--line);
+  align-items:baseline;transition:padding-left .35s var(--ease),background .35s;position:relative;overflow:hidden}
+.rrow::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--gold);
+  transform:scaleY(0);transition:transform .35s var(--ease)}
+.rrow:hover{padding-left:16px;background:rgba(217,166,72,.05)}
+.rrow:hover::before{transform:scaleY(1)}
+.rrow .no{font-family:var(--mono);font-size:10px;color:var(--gold);letter-spacing:1px}
+.rrow h4{font-family:'Cormorant',serif;font-size:25px;font-weight:500}
+.rrow p{margin-top:5px;font-size:12.5px;font-weight:400;color:var(--dim);line-height:1.65}
+.rrow .chip{display:inline-block;margin-top:9px;margin-right:6px;font-family:var(--mono);font-size:8.5px;
+  letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);border:1px solid var(--line);border-radius:2px;padding:5px 10px}
+
+/* persona / contact */
+.persona-card{display:flex;align-items:center;gap:22px;margin-top:34px;perspective:800px}
+.pv{width:96px;height:96px;border-radius:50%;flex-shrink:0;position:relative;
+  background:linear-gradient(150deg,#fff,#f0e5cc);border:1px solid rgba(168,120,26,.5);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cormorant',serif;font-size:38px;color:var(--gold-2)}
+.pv::after{content:"";position:absolute;inset:-11px;border-radius:50%;
+  background:radial-gradient(circle,rgba(168,120,26,.25),transparent 70%);z-index:-1;
+  animation:puls 4s ease-in-out infinite}
+@keyframes puls{0%,100%{transform:scale(.92);opacity:.6}50%{transform:scale(1.1);opacity:1}}
+.pn{font-family:'Cormorant',serif;font-size:31px;line-height:1.1}
+.pr{margin-top:6px;font-family:var(--mono);font-size:9.5px;letter-spacing:3px;text-transform:uppercase;color:var(--gold)}
+.pm{margin-top:5px;font-size:12px;font-weight:400;color:var(--dim)}
+.rows{margin-top:34px;border-top:1px solid var(--line)}
+.crow{display:flex;align-items:center;gap:16px;padding:20px 4px;border-bottom:1px solid var(--line);
+  text-decoration:none;color:var(--ink);transition:padding-left .35s var(--ease),background .35s;min-height:44px}
+.crow:hover{padding-left:14px;background:rgba(217,166,72,.05)}
+.crow .l{font-family:var(--mono);font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--dim);width:88px;flex-shrink:0}
+.crow .v{font-size:13.5px;font-weight:400;word-break:break-all}
+.crow .a{margin-left:auto;color:var(--gold);font-family:var(--mono);font-size:12px}
+.ctas{margin-top:32px;display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:10px;cursor:pointer;border:none;text-decoration:none;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:2.5px;text-transform:uppercase;
+  padding:17px 26px;border-radius:2px;min-height:48px;
+  transition:transform .25s var(--ease),background .3s,color .3s,box-shadow .3s;will-change:transform}
+.btn:active{transform:scale(.95)}
+.btn.gold{background:linear-gradient(110deg,#8a6210,var(--gold),#c99b3f);color:#140e04;
+  box-shadow:0 10px 34px rgba(168,120,26,.35)}
+.btn.gold:hover{background:#8f6a14;box-shadow:0 14px 44px rgba(122,90,16,.5)}
+.btn.line{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.line:hover{border-color:var(--gold);color:var(--gold-2)}
+.btn svg{width:14px;height:14px;fill:currentColor}
+.fin{text-align:center;padding:48px 0 0}
+.fin .q{font-family:'Cormorant',serif;font-style:italic;font-size:clamp(20px,5vw,29px);color:#5e5340;line-height:1.5}
+.fin .meta{margin-top:22px;font-family:var(--mono);font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--dim);line-height:2.2}
+.fin .rule{height:1px;margin-top:26px;background:linear-gradient(90deg,transparent,var(--gold-3),transparent)}
+
+/* dock / toast / qr */
+.dock{position:fixed;bottom:0;left:0;right:0;z-index:70;display:flex;justify-content:center;
+  padding:0 18px calc(14px + env(safe-area-inset-bottom));pointer-events:none}
+.dockin{pointer-events:auto;display:flex;gap:4px;background:rgba(255,253,248,.85);backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);border:1px solid rgba(168,120,26,.3);border-radius:5px;padding:6px;
+  width:100%;max-width:440px;box-shadow:0 20px 55px rgba(94,74,32,.28)}
+.d{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:11px 4px;border-radius:3px;
+  text-decoration:none;border:none;background:transparent;cursor:pointer;transition:background .25s;min-height:48px}
+.d:active{background:rgba(43,35,19,.06)}
+.d svg{width:18px;height:18px;fill:#7a6f58}
+.d span{font-family:var(--mono);font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:#7a6f58}
+.d.hot{background:linear-gradient(110deg,#6f4e0b,var(--gold-cta) 55%,#8f6a14)}
+.d.hot svg{fill:#fff}.d.hot span{color:#fff}
+#toast{position:fixed;left:50%;bottom:108px;transform:translate(-50%,16px);z-index:90;
+  background:rgba(255,253,248,.97);border:1px solid rgba(168,120,26,.5);color:#8a6210;box-shadow:0 12px 34px rgba(94,74,32,.25);
+  font-family:var(--mono);font-size:10.5px;letter-spacing:1px;border-radius:3px;padding:13px 22px;
+  opacity:0;pointer-events:none;transition:.4s var(--ease);white-space:nowrap}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+#qrm{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;padding:26px;
+  background:rgba(58,48,28,.4);backdrop-filter:blur(10px)}
+#qrm.on{display:flex}
+.qb{background:#fffdf8;border:1px solid rgba(168,120,26,.45);border-radius:5px;padding:28px;max-width:330px;
+  width:100%;text-align:center;position:relative;animation:qin .45s var(--ease)}
+@keyframes qin{from{opacity:0;transform:translateY(26px) scale(.96)}to{opacity:1;transform:none}}
+.qb .t{font-family:var(--mono);font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold)}
+.qb .n{font-family:'Cormorant',serif;font-size:25px;margin:7px 0 16px}
+.qb img,.qb canvas{width:212px;height:212px;background:#fff;border:1px solid rgba(43,35,19,.12);border-radius:3px;padding:10px}
+.qb .h{margin-top:13px;font-size:12px;color:var(--dim);font-weight:400}
+.qb .x{position:absolute;top:10px;right:14px;color:var(--dim);cursor:pointer;font-size:16px;font-family:var(--mono);
+  background:none;border:none;padding:6px}
+
+/* reveals (CSS fallback; GSAP takes over when present) */
+.rv{opacity:0;transform:translateY(36px);transition:opacity 1.1s var(--ease),transform 1.1s var(--ease)}
+.rv.in{opacity:1;transform:none}
+.no-t{transition:none!important}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<div id="pre">
+  <div class="m">Shree <i>Santram</i></div>
+  <div class="th"><i id="preTh"></i></div>
+  <div class="p" id="prePct">SPINNING · 0%</div>
+</div>
+
+<canvas id="stage"></canvas>
+<div class="vig"></div><div class="grain"></div><div id="bar"></div>
+<div id="cur"></div>
+<div class="hud a">SHREE SANTRAM · SILK MILLS LLP</div>
+<div class="hud b">FABRIC ATELIER · SURAT</div>
+
+<div class="frame">
+
+  <!-- ACT 0 — floating sheet -->
+  <header class="ch hero">
+    <div class="kick rv">The Fabric Atelier of</div>
+    <h1 class="h1 rv split">Shree Santram
+      <span class="row2">Silk Mills</span>
+      <span class="llp">L&nbsp;L&nbsp;P</span>
+    </h1>
+    <p class="tag rv">One sheet. Scroll — and watch it make the bed.</p>
+    <div class="cue rv">Unfold</div>
+  </header>
+
+  <!-- ACT 1 — the drape -->
+  <section class="ch">
+    <div class="ch-tag rv">Act 01 — The Making</div>
+    <h2 class="rv split">It settles,<br><i>like breath.</i></h2>
+    <p class="sub rv"><b>Micro peach microfiber</b> falls over the mattress in one motion — woven wide enough at <b>112″</b> that a single width dresses the entire bed. No seams. No joins.</p>
+  </section>
+
+  <!-- ACT 2 — the made bed -->
+  <section class="ch mid">
+    <div class="ch-tag rv">Act 02 — The Bed</div>
+    <h2 class="rv split">Every layer,<br><i>ours.</i></h2>
+    <p class="sub rv">Sheet, duvet, pillows — every soft surface in this room begins as <b>Shree Santram cloth</b>. Circle the bed. Look closer.</p>
+  </section>
+
+  <!-- ACT 3 — macro quality -->
+  <section class="ch mid qual">
+    <div class="ch-tag rv">Act 03 — The Quality</div>
+    <h2 class="rv split">Close enough<br><i>to feel.</i></h2>
+    <p class="sub rv">This near, you can read the weave — the brushed <b>peach-skin nap</b>, the density that makes it <b>down-proof</b>, a surface that takes print and dye without a flaw.</p>
+    <div class="ticket rv">
+      <span>NAP — <b>PEACH SKIN · BRUSHED</b></span>
+      <span>WEIGHT — <b>70–120 GSM</b></span>
+      <span>WIDTH — <b>94″ / 112″</b></span>
+      <span>WEAVE — <b>HIGH DENSITY</b></span>
+    </div>
+  </section>
+
+  <!-- ACT 4 — the range (rolls appear in 3D) -->
+  <section class="ch">
+    <div class="ch-tag rv">Act 04 — The Range</div>
+    <h2 class="rv split">Four cloths,<br><i>one mill.</i></h2>
+    <div class="range rv">
+      <div class="rrow"><span class="no">001</span><div><h4>Micro Peach</h4>
+        <p>The signature — brushed soft-touch base for bedsheets &amp; export bedding.</p>
+        <span class="chip">94″/112″</span><span class="chip">70–120 GSM</span></div></div>
+      <div class="rrow"><span class="no">002</span><div><h4>Embossed Microfiber</h4>
+        <p>Custom relief motifs for duvet covers, comforters &amp; shams.</p>
+        <span class="chip">Custom Motif</span><span class="chip">Value-Added</span></div></div>
+      <div class="rrow"><span class="no">003</span><div><h4>Down-Proof</h4>
+        <p>Fill stays in. For pillows, quilts &amp; cushions.</p>
+        <span class="chip">90+ GSM</span><span class="chip">Zero Leakage</span></div></div>
+      <div class="rrow"><span class="no">004</span><div><h4>Greige · Dyed · Finished</h4>
+        <p>Full-spectrum supply, lab-matched colour, container-ready.</p>
+        <span class="chip">Bulk</span><span class="chip">USA · Gulf · EU</span></div></div>
+    </div>
+  </section>
+
+  <!-- ACT 5 — Vineet -->
+  <section class="ch end">
+    <div class="ch-tag rv">Act 05 — The Handshake</div>
+    <h2 class="rv split">Woven by <i>people.</i></h2>
+    <div class="persona-card rv" id="pcard">
+      <div class="pv">VH</div>
+      <div>
+        <div class="pn">Vineet Halvawala</div>
+        <div class="pr">Partner · Fabrics Division</div>
+        <div class="pm">GSTIN 24ADNFS9982P1ZT</div>
+      </div>
+    </div>
+    <div class="rows rv">
+      <a class="crow" href="tel:+910000000000"><span class="l">Direct</span><span class="v">+91 00000 00000</span><span class="a">↗</span></a>
+      <a class="crow" href="https://wa.me/910000000000?text=Hello%20Vineet%2C%20I%27m%20interested%20in%20your%20microfiber%20fabrics."><span class="l">WhatsApp</span><span class="v">+91 00000 00000</span><span class="a">↗</span></a>
+      <a class="crow" href="mailto:shreesantramsilkmillsllp@gmail.com"><span class="l">Email</span><span class="v">shreesantramsilkmillsllp@gmail.com</span><span class="a">↗</span></a>
+      <a class="crow" href="https://www.linkedin.com/in/vineet-halvawala-034817205" target="_blank" rel="noopener"><span class="l">LinkedIn</span><span class="v">in/vineet-halvawala</span><span class="a">↗</span></a>
+      <div class="crow" id="gstRow" style="cursor:pointer" role="button" tabindex="0"><span class="l">GSTIN</span><span class="v">24ADNFS9982P1ZT</span><span class="a">COPY</span></div>
+    </div>
+    <div class="ctas rv">
+      <button class="btn gold mag" onclick="openQR()" aria-label="Show QR code">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm10-2h2v2h-2v-2zm2 2h2v2h-2v-2zm2-2h2v2h-2v-2zm0 4h2v4h-2v-4zm-4 0h2v2h-2v-2zm0 2h2v2h-2v-2z"/></svg>
+        Scan / QR
+      </button>
+      <button class="btn line mag" onclick="saveContact()" aria-label="Download contact card">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v10.6l-3.3-3.3-1.4 1.4L12 17.4l4.7-5.7-1.4-1.4L13 13.6V3h-1zM5 19h14v2H5v-2z"/></svg>
+        Save Contact
+      </button>
+    </div>
+    <footer class="fin rv">
+      <p class="q">“Premium microfiber fabric solutions for modern home textiles.”</p>
+      <div class="meta">Bedsheets · Duvets · Comforters · Pillows · Quilts · Hotel Linen<br>Shree Santram Silk Mills LLP</div>
+      <div class="rule"></div>
+    </footer>
+  </section>
+</div>
+
+<nav class="dock" aria-label="Quick contact"><div class="dockin">
+  <a class="d" href="tel:+910000000000" aria-label="Call Vineet"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.3 0 .7-.2 1l-2.3 2.2z"/></svg><span>Call</span></a>
+  <a class="d" href="https://wa.me/910000000000" aria-label="WhatsApp Vineet"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.7 14.9L2 22l5.3-1.4A10 10 0 1 0 12 2zm4.5 12.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4 0-.5.2-.8l.4-.5c.1-.2.1-.4 0-.5l-.8-1.9c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.9.9-1.1 2.2-.2 3.7 1.4 2.3 3.3 4 5.8 4.9 1.7.6 2.6.4 3.3.2.6-.1 1.5-.6 1.7-1.2.2-.6.2-1.2.1-1.3-.1-.1-.3-.2-.5-.3z"/></svg><span>WA</span></a>
+  <button class="d hot" onclick="openQR()" aria-label="Show QR code"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm8-2h2v2h-2v-2zm2 2h2v2h-2v-2zm2-2h2v2h-2v-2zm0 4h2v4h-2v-4zm-4 0h2v2h-2v-2zm0 2h2v2h-2v-2z"/></svg><span>QR</span></button>
+  <a class="d" href="mailto:shreesantramsilkmillsllp@gmail.com" aria-label="Email"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg><span>Mail</span></a>
+  <a class="d" href="https://www.linkedin.com/in/vineet-halvawala-034817205" target="_blank" rel="noopener" aria-label="LinkedIn profile"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3V9zm7 0h3.8v1.7h.05c.53-.95 1.83-1.95 3.75-1.95 4 0 4.75 2.5 4.75 5.75V21h-4v-5.7c0-1.36-.03-3.1-1.9-3.1-1.9 0-2.2 1.47-2.2 3v5.8h-4V9z"/></svg><span>In</span></a>
+</div></nav>
+
+<div id="toast" role="status"></div>
+
+<div id="qrm" onclick="if(event.target===this)closeQR()" role="dialog" aria-label="QR code">
+  <div class="qb">
+    <button class="x" onclick="closeQR()" aria-label="Close">✕</button>
+    <div class="t">Scan to save contact</div>
+    <div class="n">Vineet Halvawala</div>
+    <div id="qrHost"></div>
+    <div class="h">Adds phone, email &amp; LinkedIn to contacts.</div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+/* ============ PRELOADER ============ */
+(function(){
+  const th=document.getElementById('preTh'),pc=document.getElementById('prePct'),pre=document.getElementById('pre');
+  let p=0;const w=['SPINNING','WARPING','WEAVING','FINISHING'];
+  const iv=setInterval(()=>{p=Math.min(p+Math.random()*13+6,100);
+    th.style.width=p+'%';pc.textContent=w[Math.min(Math.floor(p/26),3)]+' · '+Math.floor(p)+'%';
+    if(p>=100){clearInterval(iv);setTimeout(()=>pre.classList.add('off'),320)}},125);
+  setTimeout(()=>pre.classList.add('off'),3400);
+})();
+
+/* ============ SCROLL-SCRUBBED 3D BED STORY + FINALE ROLLS ============ */
+(function(){
+  const cv=document.getElementById('stage');
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(typeof THREE==='undefined')return;
+  let R;try{R=new THREE.WebGLRenderer({canvas:cv,alpha:true,antialias:true})}catch(e){return}
+  R.setPixelRatio(Math.min(devicePixelRatio,2));
+  R.outputEncoding=THREE.sRGBEncoding;
+  R.toneMapping=THREE.ACESFilmicToneMapping;
+  R.toneMappingExposure=1.12;
+  R.shadowMap.enabled=true;
+  R.shadowMap.type=THREE.PCFSoftShadowMap;
+  const scene=new THREE.Scene();
+  const cam=new THREE.PerspectiveCamera(45,1,.1,100);
+
+  scene.add(new THREE.AmbientLight(0xfff6e6,.5));
+  const key=new THREE.DirectionalLight(0xfff2d8,.55);key.position.set(3,8,5);
+  key.castShadow=true;key.shadow.mapSize.set(1024,1024);
+  key.shadow.camera.left=-6;key.shadow.camera.right=6;
+  key.shadow.camera.top=8;key.shadow.camera.bottom=-4;
+  key.shadow.camera.near=.5;key.shadow.camera.far=24;key.shadow.bias=-.002;
+  scene.add(key);
+  const spot=new THREE.PointLight(0xffca70,.5,16);spot.position.set(0,4.4,2.5);scene.add(spot);
+  const under=new THREE.PointLight(0xd9843c,.22,8);under.position.set(0,-.4,2.5);scene.add(under);
+
+  /* world root — sizes & centers the whole 3D set */
+  const WS=.8;                              /* world scale (one dial) */
+  const WOFF=new THREE.Vector3(0,.3,0);     /* world offset */
+  const world=new THREE.Group();
+  world.scale.setScalar(WS);
+  world.position.copy(WOFF);
+  scene.add(world);
+
+  /* ---------- textures ---------- */
+  function baseTex(a,b,weave){
+    const c=document.createElement('canvas');c.width=c.height=512;const g=c.getContext('2d');
+    const gr=g.createLinearGradient(0,0,512,512);gr.addColorStop(0,a);gr.addColorStop(1,b);
+    g.fillStyle=gr;g.fillRect(0,0,512,512);
+    for(let y=0;y<512;y+=4){g.globalAlpha=(y%8?0.10:0.05);g.fillStyle=y%8?'#000':'#fff';g.fillRect(0,y,512,2)}
+    for(let x=0;x<512;x+=4){g.globalAlpha=(x%8?0.06:0.03);g.fillStyle=x%8?'#000':'#fff';g.fillRect(x,0,2,512)}
+    if(weave){g.globalAlpha=.14;g.strokeStyle='#5c421c';g.lineWidth=2;
+      for(let i=-512;i<1024;i+=10){g.beginPath();g.moveTo(i,0);g.lineTo(i+512,512);g.stroke()}}
+    const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=4;return t;
+  }
+  function woodTex(){
+    const c=document.createElement('canvas');c.width=c.height=256;const g=c.getContext('2d');
+    g.fillStyle='#241a10';g.fillRect(0,0,256,256);
+    for(let i=0;i<40;i++){g.globalAlpha=.15;g.strokeStyle=i%2?'#3a2a17':'#170f08';g.lineWidth=1+Math.random()*3;
+      g.beginPath();g.moveTo(0,i*7+Math.random()*4);g.bezierCurveTo(80,i*7+8,180,i*7-8,256,i*7+4);g.stroke()}
+    return new THREE.CanvasTexture(c);
+  }
+  function glowTex(){
+    const c=document.createElement('canvas');c.width=c.height=256;const g=c.getContext('2d');
+    const gr=g.createRadialGradient(128,128,0,128,128,128);
+    gr.addColorStop(0,'rgba(255,214,140,.85)');gr.addColorStop(.4,'rgba(240,180,90,.28)');gr.addColorStop(1,'rgba(240,180,90,0)');
+    g.fillStyle=gr;g.fillRect(0,0,256,256);
+    return new THREE.CanvasTexture(c);
+  }
+
+
+  /* ---------- the bed ---------- */
+  const bed=new THREE.Group();world.add(bed);
+  const bedMats=[];
+  function bm(m){bedMats.push(m);m.transparent=true;return m}
+  const wood=woodTex();
+  const frame=new THREE.Mesh(new THREE.BoxGeometry(4.8,.5,3.4),bm(new THREE.MeshLambertMaterial({map:wood})));
+  frame.position.y=.45;bed.add(frame);
+  [[-2.2,-1.5],[2.2,-1.5],[-2.2,1.5],[2.2,1.5]].forEach(p=>{
+    const leg=new THREE.Mesh(new THREE.BoxGeometry(.22,.5,.22),bm(new THREE.MeshLambertMaterial({map:wood})));
+    leg.position.set(p[0],.12,p[1]);bed.add(leg);
+  });
+  const head=new THREE.Mesh(new THREE.BoxGeometry(4.8,1.7,.24),
+    bm(new THREE.MeshLambertMaterial({map:baseTex('#2e6b4a','#1c4530')})));
+  head.position.set(0,1.35,-1.72);bed.add(head);
+  const matt=new THREE.Mesh(new THREE.BoxGeometry(4.5,.55,3.1),
+    bm(new THREE.MeshLambertMaterial({map:baseTex('#efe3c8','#d8c39a')})));
+  matt.position.y=.98;bed.add(matt);
+  const pillows=[];
+  const pilCols=[['#f6efdd','#d9c9a4'],['#8fa8cc','#5f7ba3']];
+  [[-1.05],[1.05]].forEach((p,i)=>{
+    const pl=new THREE.Mesh(new THREE.SphereGeometry(.78,22,16),
+      bm(new THREE.MeshLambertMaterial({map:baseTex(pilCols[i][0],pilCols[i][1])})));
+    pl.scale.set(1.5,.55,.95);pl.rotation.x=-.28;
+    pl.position.set(p[0],1.62,-1.05);pl.userData.baseY=1.62;
+    bed.add(pl);pillows.push(pl);
+  });
+  const duv=new THREE.Mesh(new THREE.BoxGeometry(4.55,.3,1.1),
+    bm(new THREE.MeshLambertMaterial({map:baseTex('#b4544a','#8a3428',true)})));
+  duv.position.set(0,1.42,1.0);bed.add(duv);
+
+  /* ---------- bedroom set: wall, rug, plants, floor lamp ---------- */
+  /* back wall */
+  const wall=new THREE.Mesh(new THREE.PlaneGeometry(26,10),
+    bm(new THREE.MeshLambertMaterial({color:0xe6cfa4})));
+  wall.position.set(0,4.4,-3.6);bed.add(wall);
+  /* skirting line on wall */
+  const skirt=new THREE.Mesh(new THREE.BoxGeometry(26,.18,.06),
+    bm(new THREE.MeshLambertMaterial({color:0xa8895c})));
+  skirt.position.set(0,.09,-3.55);bed.add(skirt);
+  /* rug */
+  const rug=new THREE.Mesh(new THREE.CylinderGeometry(3.8,3.8,.04,48),
+    bm(new THREE.MeshLambertMaterial({map:baseTex('#cf9a68','#a86f42',true)})));
+  rug.position.y=.02;bed.add(rug);
+
+  /* potted plant builder */
+  const plantSway=[];
+  function makePlant(x,z,s){
+    const root=new THREE.Group();
+    const pot=new THREE.Mesh(new THREE.CylinderGeometry(.34,.25,.52,20),
+      bm(new THREE.MeshLambertMaterial({color:0xb35f38})));
+    pot.position.y=.26;root.add(pot);
+    const rim=new THREE.Mesh(new THREE.CylinderGeometry(.37,.36,.09,20),
+      bm(new THREE.MeshLambertMaterial({color:0xc46b40})));
+    rim.position.y=.5;root.add(rim);
+    const soil=new THREE.Mesh(new THREE.CylinderGeometry(.3,.3,.06,20),
+      bm(new THREE.MeshLambertMaterial({color:0x35270f})));
+    soil.position.y=.53;root.add(soil);
+    const leafMat=bm(new THREE.MeshLambertMaterial({color:0x2e8a4d,side:THREE.DoubleSide}));
+    const stemMat=bm(new THREE.MeshLambertMaterial({color:0x1f6b38}));
+    const crown=new THREE.Group();crown.position.y=.55;root.add(crown);
+    for(let i=0;i<8;i++){
+      const fan=new THREE.Group();
+      fan.rotation.y=i/8*Math.PI*2+ (i%2)*.3;
+      const stem=new THREE.Mesh(new THREE.CylinderGeometry(.016,.024,.9,6),stemMat);
+      stem.position.set(.1,.42,0);stem.rotation.z=-.42;fan.add(stem);
+      const leaf=new THREE.Mesh(new THREE.SphereGeometry(1,10,8),leafMat);
+      leaf.scale.set(.13,.5,.05);
+      leaf.position.set(.38,.92,0);leaf.rotation.z=-.55;fan.add(leaf);
+      crown.add(fan);
+    }
+    root.position.set(x,0,z);root.scale.setScalar(s);
+    plantSway.push(crown);bed.add(root);
+    return root;
+  }
+  makePlant(-3.35,-1.15,1.25);   /* left of bed */
+  makePlant(3.15,-1.35,1.05);    /* right of bed, by the lamp */
+
+  /* big floor lamp */
+  const lampGrp=new THREE.Group();
+  const lbase=new THREE.Mesh(new THREE.CylinderGeometry(.42,.46,.07,24),
+    bm(new THREE.MeshLambertMaterial({color:0x6b5124})));
+  lbase.position.y=.035;lampGrp.add(lbase);
+  const pole=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,2.35,12),
+    bm(new THREE.MeshLambertMaterial({color:0x8a6a34})));
+  pole.position.y=1.22;lampGrp.add(pole);
+  const shadeMat=bm(new THREE.MeshLambertMaterial({color:0xf0b95c,side:THREE.DoubleSide,
+    emissive:0xffd98a,emissiveIntensity:0}));
+  const shade=new THREE.Mesh(new THREE.CylinderGeometry(.52,.78,.95,26,1,true),shadeMat);
+  shade.position.y=2.62;lampGrp.add(shade);
+  const shadeCap=new THREE.Mesh(new THREE.CylinderGeometry(.52,.52,.03,26),
+    bm(new THREE.MeshLambertMaterial({color:0xf6ead0})));
+  shadeCap.position.y=3.1;lampGrp.add(shadeCap);
+  const lampLight=new THREE.PointLight(0xffd98a,0,8);
+  lampLight.position.y=2.5;lampGrp.add(lampLight);
+  const lampGlow=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex(),transparent:true,opacity:0,
+    blending:THREE.NormalBlending,depthWrite:false}));
+  lampGlow.scale.set(2.6,2.6,1);lampGlow.position.y=2.6;lampGrp.add(lampGlow);
+  lampGrp.position.set(3.85,0,-.55);bed.add(lampGrp);
+  /* soft shadows across the whole set */
+  bed.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
+  wall.castShadow=false;rug.castShadow=false;
+  function shadowTex(){
+    const c=document.createElement('canvas');c.width=c.height=256;const g=c.getContext('2d');
+    const gr=g.createRadialGradient(128,128,0,128,128,128);
+    gr.addColorStop(0,'rgba(74,58,28,.55)');gr.addColorStop(.55,'rgba(74,58,28,.22)');gr.addColorStop(1,'rgba(74,58,28,0)');
+    g.fillStyle=gr;g.fillRect(0,0,256,256);
+    return new THREE.CanvasTexture(c);
+  }
+  const pool=new THREE.Mesh(new THREE.CircleGeometry(4.2,40),
+    new THREE.MeshBasicMaterial({map:shadowTex(),transparent:true,opacity:.6,depthWrite:false}));
+  pool.rotation.x=-Math.PI/2;pool.position.y=-.05;world.add(pool);
+
+  /* ---------- THE SHEET — micro peach product fabric (hi-res weave + branded selvedge) ---------- */
+  function fabricTex(){
+    const c=document.createElement('canvas');c.width=c.height=1024;const g=c.getContext('2d');
+    const gr=g.createLinearGradient(0,0,1024,1024);
+    gr.addColorStop(0,'#f2b478');gr.addColorStop(.55,'#e09452');gr.addColorStop(1,'#c37a2e');
+    g.fillStyle=gr;g.fillRect(0,0,1024,1024);
+    /* warp & weft */
+    for(let y=0;y<1024;y+=4){g.globalAlpha=(y%8?0.09:0.045);g.fillStyle=y%8?'#6b5124':'#fff';g.fillRect(0,y,1024,2)}
+    for(let x=0;x<1024;x+=4){g.globalAlpha=(x%8?0.055:0.03);g.fillStyle=x%8?'#6b5124':'#fff';g.fillRect(x,0,2,1024)}
+    /* twill ribs (visible at macro) */
+    g.globalAlpha=.07;g.strokeStyle='#8a4d1c';g.lineWidth=3;
+    for(let i=-1024;i<2048;i+=12){g.beginPath();g.moveTo(i,0);g.lineTo(i+1024,1024);g.stroke()}
+    /* peach-skin nap: soft micro speckle */
+    for(let i=0;i<5200;i++){
+      g.globalAlpha=.028;g.fillStyle=i%2?'#ffe0b8':'#7a3f14';
+      g.fillRect(Math.random()*1024,Math.random()*1024,1.5,1.5);
+    }
+    /* branded selvedge band */
+    g.globalAlpha=1;g.fillStyle='rgba(90,50,10,.22)';g.fillRect(0,984,1024,40);
+    g.strokeStyle='rgba(90,50,10,.55)';g.lineWidth=2;
+    g.beginPath();g.moveTo(0,984);g.lineTo(1024,984);g.stroke();
+    g.fillStyle='rgba(70,38,8,.92)';g.font='500 21px "JetBrains Mono",monospace';
+    for(let x=14;x<1024;x+=372){g.fillText('SHREE SANTRAM \u00b7 MICRO PEACH \u00b7 112\u2033',x,1011)}
+    const t=new THREE.CanvasTexture(c);
+    t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=8;t.encoding=THREE.sRGBEncoding;
+    return t;
+  }
+  function fabricBump(){
+    const c=document.createElement('canvas');c.width=c.height=512;const g=c.getContext('2d');
+    g.fillStyle='#808080';g.fillRect(0,0,512,512);
+    for(let y=0;y<512;y+=4){g.globalAlpha=.5;g.fillStyle=y%8?'#6a6a6a':'#9a9a9a';g.fillRect(0,y,512,2)}
+    for(let x=0;x<512;x+=4){g.globalAlpha=.32;g.fillStyle=x%8?'#707070':'#929292';g.fillRect(x,0,2,512)}
+    for(let i=0;i<2600;i++){g.globalAlpha=.2;g.fillStyle=i%2?'#a0a0a0':'#606060';
+      g.fillRect(Math.random()*512,Math.random()*512,1.5,1.5)}
+    const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;return t;
+  }
+  const sheetGeo=new THREE.PlaneGeometry(5.9,4.3,72,50);
+  const sheetTex=fabricTex();
+  const sheetBmp=fabricBump();
+  const sheet=new THREE.Mesh(sheetGeo,new THREE.MeshPhongMaterial({
+    map:sheetTex,bumpMap:sheetBmp,bumpScale:.018,
+    specular:0x3d3117,shininess:9,side:THREE.DoubleSide}));
+  sheet.castShadow=true;sheet.receiveShadow=true;
+  world.add(sheet);
+  const pos=sheetGeo.attributes.position;
+  const gx=[],gy=[];
+  for(let i=0;i<pos.count;i++){gx.push(pos.getX(i));gy.push(pos.getY(i))}
+  const mattTop=1.28,mhw=2.25,mhd=1.55,drop=1.5;
+  /* float→fall→drape: floatBase carries the sheet from high above the bed down to it */
+  function updateSheet(t,drape,wind,floatBase,fall){
+    for(let i=0;i<pos.count;i++){
+      const x=gx[i],y=gy[i];
+      /* cascade: while falling, the top edge lags behind the bottom (cloth streams) */
+      const lag=(y+2.15)/4.3;                       /* 0 bottom → 1 top */
+      const stream=fall*(1-drape)*lag*1.15;
+      const fx=x+Math.sin(t*.7+y*1.2)*.14*fall*(1-drape),
+            fy=floatBase+y*.94+stream+Math.sin(x*.7+t*.9)*.12,
+            fz=Math.sin(x*1.25+t*1.6)*.5*wind+Math.sin(y*1.9+t*1.1)*.26*wind;
+      const over=Math.max(Math.abs(x)-mhw,Math.abs(y)-mhd,0);
+      const dy=mattTop-Math.min(over*1.7,drop)+Math.sin(x*2.4+t*.6)*.012+Math.sin(y*3+t*.5)*.012;
+      const k=drape;
+      pos.setXYZ(i,fx+(x*(1-Math.min(over,.4)*.06)-fx)*k,fy+(dy-fy)*k,fz+(y*(1-Math.min(over,.4)*.06)-fz)*k);
+    }
+    pos.needsUpdate=true;sheetGeo.computeVertexNormals();
+  }
+
+  /* ---------- finale: floating product rolls ---------- */
+  const rollGrp=new THREE.Group();world.add(rollGrp);
+  const rollDefs=[['#e09452','#a85a1e'],['#2e8a55','#1c5c38'],['#5f7fc0','#3c5a94'],['#cdb28a','#98815a']];
+  const rolls=[];
+  rollDefs.forEach((cset,i)=>{
+    const g=new THREE.Group();
+    const m=bmRoll(new THREE.MeshLambertMaterial({map:baseTex(cset[0],cset[1]),transparent:true,opacity:0}));
+    const cyl=new THREE.Mesh(new THREE.CylinderGeometry(.34,.34,2.5,22),m);
+    cyl.rotation.z=Math.PI/2;g.add(cyl);
+    const gl=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex(),transparent:true,opacity:0,
+      blending:THREE.NormalBlending,depthWrite:false}));
+    gl.scale.set(3.4,3.4,1);g.add(gl);
+    const a=(i-1.5)/1.5;
+    g.position.set(a*3.1, 3.1+Math.abs(a)*.5, -.6);
+    g.userData={cyl,gl,ph:i*1.4,baseY:g.position.y};
+    rollGrp.add(g);rolls.push(g);
+  });
+  function bmRoll(m){return m}
+
+  /* ---------- dust ---------- */
+  const N=130,dp=new Float32Array(N*3);
+  for(let i=0;i<N;i++){dp[i*3]=(Math.random()-.5)*9;dp[i*3+1]=Math.random()*6-.5;dp[i*3+2]=(Math.random()-.5)*6}
+  const dg=new THREE.BufferGeometry();dg.setAttribute('position',new THREE.BufferAttribute(dp,3));
+  const dust=new THREE.Points(dg,new THREE.PointsMaterial({color:0x8a6210,size:.045,transparent:true,opacity:.5,depthWrite:false}));
+  world.add(dust);
+
+  /* ---------- timeline helpers ---------- */
+  const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+  const band=(p,a,b)=>clamp((p-a)/(b-a),0,1);
+  const ss=x=>x*x*(3-2*x);
+  const lerp=(a,b,k)=>a+(b-a)*k;
+  const KP=[
+    {p:0.00,pos:[0, 2.8,10.6],look:[0,3.9,0]},   /* cascading sheet centered in frame */
+    {p:0.14,pos:[0, 2.2, 9.4],look:[0,2.3,0]},
+    {p:0.30,pos:[0, 3.0, 7.6],look:[0,1.15,0]},
+    {p:0.42,pos:[4.6,2.5, 5.6],look:[0,1.1,0]},
+    {p:0.54,pos:[-4.2,2.8,5.4],look:[0,1.1,0]},
+    {p:0.68,pos:[-1.1,1.75,1.35],look:[0,1.28,-0.3]},
+    {p:0.80,pos:[-0.7,1.6,1.0],look:[0.3,1.26,-0.5]},
+    {p:0.92,pos:[0, 3.3, 9.2],look:[0,2.1,0]},
+    {p:1.00,pos:[0, 3.0, 9.8],look:[0,1.9,0]},
+  ];
+  function camAt(p){
+    let i=0;while(i<KP.length-2&&KP[i+1].p<p)i++;
+    const a=KP[i],b=KP[i+1],k=ss(band(p,a.p,b.p));
+    /* camera path stays in "stage" space; look-target is mapped into the scaled world
+       so the scene is always dead-center in frame regardless of WS/WOFF */
+    cam.position.set(lerp(a.pos[0],b.pos[0],k),lerp(a.pos[1],b.pos[1],k),lerp(a.pos[2],b.pos[2],k));
+    return new THREE.Vector3(lerp(a.look[0],b.look[0],k),lerp(a.look[1],b.look[1],k),lerp(a.look[2],b.look[2],k))
+      .multiplyScalar(WS).add(WOFF);
+  }
+
+  function size(){R.setSize(innerWidth,innerHeight,false);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()}
+  size();addEventListener('resize',size);
+  let px=0,py=0;
+  addEventListener('pointermove',e=>{px=e.clientX/innerWidth-.5;py=e.clientY/innerHeight-.5},{passive:true});
+  addEventListener('deviceorientation',e=>{if(e.gamma!=null){px=e.gamma/90;py=e.beta/180}},{passive:true});
+
+  let t=0;
+  (function loop(){
+    requestAnimationFrame(loop);
+    if(document.hidden)return;
+    if(!reduced)t+=0.016;
+    const doc=document.documentElement;
+    const p=clamp(scrollY/((doc.scrollHeight-innerHeight)||1),0,1);
+
+    const fall=ss(band(p,.02,.16));      /* sheet pours down from above the frame */
+    const bedIn=ss(band(p,.10,.24));     /* bed rises beneath it */
+    const drape=ss(band(p,.18,.34));     /* sheet settles onto the mattress */
+    const dressed=ss(band(p,.34,.46));
+    const macro=ss(band(p,.58,.74));
+    const range=ss(band(p,.84,.94));
+    const floatBase=1.35+ (1-fall)*3.15; /* 4.5 → 1.35 world-Y descent, centered */
+
+    bed.position.y=lerp(-2.6,0,bedIn);
+    bedMats.forEach(m=>m.opacity=bedIn);
+    pool.material.opacity=.18+bedIn*.5;
+
+    pillows.forEach((pl,i)=>{
+      pl.position.y=pl.userData.baseY+(1-dressed)*3.2;
+      pl.material.opacity=dressed*bedIn;
+      pl.position.x=(i? 1.05:-1.05)+Math.sin(t*.8+i)*.01;
+    });
+    duv.position.z=lerp(3.4,1.0,dressed);
+    duv.material.opacity=dressed*bedIn;
+
+    /* bedroom life: lamp warms up as the bed dresses, leaves sway */
+    lampLight.intensity=bedIn*.45+dressed*.2+range*.12;
+    shadeMat.emissiveIntensity=bedIn*.35+dressed*.15;
+    lampGlow.material.opacity=bedIn*.16;
+    plantSway.forEach((c,i)=>{c.rotation.z=Math.sin(t*.7+i*2.1)*.045;c.rotation.x=Math.cos(t*.5+i)*.03});
+
+    updateSheet(t,drape,(1-drape*.92)*(.7+fall*.5),floatBase,fall);
+    const rep=1+macro*5;
+    sheetTex.repeat.set(rep,rep);
+    sheetBmp.repeat.set(rep,rep);
+    const sway=Math.sin(t*.4)*.02*(1-macro);
+    bed.rotation.y=sway+px*.06*(1-macro);
+    sheet.rotation.y=bed.rotation.y*drape;
+
+    /* finale rolls */
+    rolls.forEach((g,i)=>{
+      const k=ss(band(range,i*.12,.6+i*.12));
+      g.scale.setScalar(Math.max(k,.001));
+      g.userData.cyl.material.opacity=k*.95;
+      g.userData.gl.material.opacity=k*.25;
+      g.position.y=g.userData.baseY+Math.sin(t*.7+g.userData.ph)*.16;
+      g.userData.cyl.rotation.x+=reduced?0:.014;
+    });
+
+    spot.intensity=.5+macro*.4+range*.2;
+    under.intensity=.22+range*.15;
+
+    const dpos=dust.geometry.attributes.position;
+    for(let i=0;i<N;i++){let y=dpos.getY(i)+.006;if(y>6)y=-.5;dpos.setY(i,y)}
+    dpos.needsUpdate=true;
+    dust.material.opacity=.55*(1-macro*.6);
+
+    const look=camAt(p);
+    cam.position.x+=Math.sin(t*.5)*.02+px*.3;
+    cam.position.y+=Math.cos(t*.4)*.015+py*.2;
+    cam.lookAt(look);
+    R.render(scene,cam);
+  })();
+})();
+
+/* ============ PROGRESS BAR ============ */
+addEventListener('scroll',()=>{
+  document.getElementById('bar').style.width=
+    (scrollY/((document.documentElement.scrollHeight-innerHeight)||1)*100)+'%';
+},{passive:true});
+
+/* ============ TEXT FX — GSAP char reveals w/ CSS fallback ============ */
+(function(){
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const hasG=typeof gsap!=='undefined'&&typeof ScrollTrigger!=='undefined'&&!reduced;
+  if(hasG){
+    gsap.registerPlugin(ScrollTrigger);
+    /* split headlines into animated lines/words */
+    document.querySelectorAll('.split').forEach(h=>{
+      h.classList.add('in','no-t');
+      const walk=[...h.childNodes];
+      gsap.from(h,{opacity:0,y:50,duration:1.1,ease:'expo.out',
+        scrollTrigger:{trigger:h,start:'top 82%'}});
+      gsap.to(h,{yPercent:-6,ease:'none',
+        scrollTrigger:{trigger:h,start:'top bottom',end:'bottom top',scrub:1}});
+    });
+    document.querySelectorAll('.rv:not(.split)').forEach(el=>{
+      el.classList.add('in','no-t');
+      gsap.from(el,{opacity:0,y:34,duration:.9,ease:'expo.out',
+        scrollTrigger:{trigger:el,start:'top 88%'}});
+    });
+    document.querySelectorAll('.ticket').forEach(tk=>{
+      gsap.from(tk.querySelectorAll('span'),{opacity:0,x:-14,stagger:.09,duration:.5,ease:'power1.out',
+        scrollTrigger:{trigger:tk,start:'top 88%'}});
+    });
+    document.querySelectorAll('.rrow').forEach(r=>{
+      gsap.from(r,{opacity:0,y:26,duration:.7,ease:'expo.out',
+        scrollTrigger:{trigger:r,start:'top 92%'}});
+    });
+    addEventListener('load',()=>ScrollTrigger.refresh());
+  }else{
+    const io=new IntersectionObserver(es=>es.forEach(e=>{
+      if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}
+    }),{threshold:.14,rootMargin:'0px 0px -8% 0px'});
+    document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+  }
+})();
+
+/* ============ CUSTOM CURSOR + MAGNETIC BUTTONS ============ */
+(function(){
+  if(!matchMedia('(pointer:fine)').matches)return;
+  const cur=document.getElementById('cur');
+  let cx=innerWidth/2,cy=innerHeight/2,tx=cx,ty=cy;
+  addEventListener('pointermove',e=>{tx=e.clientX;ty=e.clientY},{passive:true});
+  (function f(){requestAnimationFrame(f);cx+=(tx-cx)*.22;cy+=(ty-cy)*.22;
+    cur.style.left=cx+'px';cur.style.top=cy+'px'})();
+  document.querySelectorAll('a,button,.crow,.rrow').forEach(el=>{
+    el.addEventListener('pointerenter',()=>cur.classList.add('big'));
+    el.addEventListener('pointerleave',()=>cur.classList.remove('big'));
+  });
+  document.querySelectorAll('.mag').forEach(b=>{
+    b.addEventListener('pointermove',e=>{
+      const r=b.getBoundingClientRect();
+      const dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2);
+      b.style.transform=`translate(${dx*.15}px,${dy*.25}px)`;
+    });
+    b.addEventListener('pointerleave',()=>b.style.transform='');
+  });
+})();
+
+/* ============ 3D TILT — persona card ============ */
+(function(){
+  const c=document.getElementById('pcard');if(!c)return;
+  c.addEventListener('pointermove',e=>{
+    const r=c.getBoundingClientRect();
+    const dx=(e.clientX-r.left)/r.width-.5,dy=(e.clientY-r.top)/r.height-.5;
+    c.style.transform=`rotateY(${dx*10}deg) rotateX(${-dy*10}deg)`;
+  });
+  c.addEventListener('pointerleave',()=>c.style.transform='');
+})();
+
+/* ============ VCARD / QR / TOAST ============ */
+const VCARD=`BEGIN:VCARD
+VERSION:3.0
+N:Halvawala;Vineet;;;
+FN:Vineet Halvawala
+ORG:Shree Santram Silk Mills LLP
+TITLE:Partner
+TEL;TYPE=CELL:+910000000000
+EMAIL:shreesantramsilkmillsllp@gmail.com
+URL:https://www.linkedin.com/in/vineet-halvawala-034817205
+NOTE:Microfiber fabrics - micro peach, embossed, down-proof. GST 24ADNFS9982P1ZT
+END:VCARD`;
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');
+  clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),2400)}
+function saveContact(){const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([VCARD],{type:'text/vcard'}));
+  a.download='Vineet-Halvawala-ShreeSantram.vcf';a.click();toast('Contact saved ✓')}
+let qrDone=false;
+function openQR(){
+  document.getElementById('qrm').classList.add('on');
+  if(qrDone)return;
+  try{new QRCode(document.getElementById('qrHost'),{text:VCARD,width:212,height:212,
+    colorDark:'#140e04',colorLight:'#f0ead9',correctLevel:QRCode.CorrectLevel.L});qrDone=true}
+  catch(e){toast('QR needs internet once')}
+}
+function closeQR(){document.getElementById('qrm').classList.remove('on')}
+const gstRow=document.getElementById('gstRow');
+gstRow.addEventListener('click',()=>{
+  navigator.clipboard.writeText('24ADNFS9982P1ZT').then(()=>toast('GSTIN copied ✓'))});
+gstRow.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')gstRow.click()});
+addEventListener('keydown',e=>{if(e.key==='Escape')closeQR()});
+</script>
+</body>
+</html>
