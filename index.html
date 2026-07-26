@@ -10,7 +10,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://images.unsplash.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Montserrat:wght@300;400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
 :root{
   --bg:#0e0c09;
@@ -46,7 +45,9 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);o
 .scene::after{content:"";position:absolute;inset:0;
   background:linear-gradient(180deg,rgba(14,12,9,.55) 0%,rgba(14,12,9,.12) 32%,rgba(14,12,9,.14) 62%,rgba(14,12,9,.78) 100%)}
 .scene.dk::after{background:linear-gradient(180deg,rgba(14,12,9,.72) 0%,rgba(14,12,9,.5) 40%,rgba(14,12,9,.55) 70%,rgba(14,12,9,.85) 100%)}
-#stage{position:fixed;inset:0;width:100vw;height:100vh;z-index:2;pointer-events:none}
+#sc-silk{transition:border-radius .1s linear;z-index:1;box-shadow:0 40px 120px rgba(0,0,0,.5)}
+#sc-silk.diving{border-radius:26px;overflow:hidden}
+#sc-silk.diving::after{background:linear-gradient(180deg,rgba(14,12,9,.28),rgba(14,12,9,.42))}
 .vig{position:fixed;inset:0;z-index:3;pointer-events:none;
   background:radial-gradient(120% 88% at 50% 42%, transparent 42%, rgba(6,5,3,.62) 100%)}
 .grain{position:fixed;inset:0;z-index:4;pointer-events:none;opacity:.4;
@@ -215,7 +216,6 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);o
 <div class="scene" id="sc-macro"><img src="https://images.unsplash.com/photo-1714682597753-a646ba506cee?w=1800&q=80" alt="" loading="lazy"></div>
 <div class="scene" id="sc-warm"><img src="https://images.unsplash.com/photo-1765547090903-348b711f0eee?w=1600&q=80" alt="" loading="lazy"></div>
 
-<canvas id="stage"></canvas>
 <div class="vig"></div><div class="grain"></div><div id="bar"></div>
 <div class="hud a">SHREE SANTRAM · SILK MILLS LLP</div>
 <div class="hud b">FABRIC ATELIER · SURAT</div>
@@ -352,8 +352,8 @@ function prog(){const d=document.documentElement;return clamp(scrollY/((d.scroll
 
 /* ============ CINEMATIC PHOTO SCENES — scrubbed crossfades & slow pans ============ */
 const SCENES=[
-  {el:document.getElementById('sc-silk'),  a:-0.02,b:0.0,c:0.06,d:0.16, zoom:[1.15,1.02],y:[0,-3]},
-  {el:document.getElementById('sc-room'),  a:0.06,b:0.15,c:0.30,d:0.40, zoom:[1.14,1.0],y:[4,-4]},
+  {el:document.getElementById('sc-silk'),  a:-0.02,b:0.0,c:0.10,d:0.24, zoom:[1.18,0.55],y:[0,26]},
+  {el:document.getElementById('sc-room'),  a:0.04,b:0.14,c:0.30,d:0.40, zoom:[1.16,1.0],y:[3,-4]},
   {el:document.getElementById('sc-layers'),a:0.30,b:0.40,c:0.52,d:0.60, zoom:[1.16,1.02],y:[3,-3]},
   {el:document.getElementById('sc-macro'), a:0.52,b:0.60,c:0.72,d:0.80, zoom:[1.05,1.3],y:[-2,2]},
   {el:document.getElementById('sc-warm'),  a:0.72,b:0.80,c:0.90,d:0.97, zoom:[1.14,1.0],y:[4,-3]},
@@ -362,105 +362,14 @@ function updateScenes(p){
   SCENES.forEach(s=>{
     const vis=band(p,s.a,s.b)*(1-band(p,s.c,s.d));
     s.el.style.opacity=(vis*.999).toFixed(3);
-    const t=band(p,s.a,s.d);
+    const t=ss(band(p,s.a,s.d));
     const z=lerp(s.zoom[0],s.zoom[1],t), ty=lerp(s.y[0],s.y[1],t);
     s.el.style.transform=`scale(${z}) translateY(${ty}svh)`;
   });
+  /* the sheet becomes an object as it dives into the room */
+  const silk=document.getElementById('sc-silk');
+  silk.classList.toggle('diving',p>0.03&&p<0.26);
 }
-
-/* ============ 3D SILK — falls into the photographed room ============ */
-(function(){
-  const cv=document.getElementById('stage');
-  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if(typeof THREE==='undefined')return;
-  let R=null,tries=0;
-  function makeR(){
-    try{R=new THREE.WebGLRenderer({canvas:cv,alpha:true,antialias:true,powerPreference:'high-performance'});return true}
-    catch(e){R=null;return false}
-  }
-  function waitR(cb){
-    if(makeR())return cb();
-    if(++tries>6)return;
-    setTimeout(()=>waitR(cb),900);
-  }
-  waitR(start);
-  function start(){
-  R.setPixelRatio(Math.min(devicePixelRatio,2));
-  R.outputEncoding=THREE.sRGBEncoding;
-  R.toneMapping=THREE.ACESFilmicToneMapping;
-  R.toneMappingExposure=1.08;
-  const scene=new THREE.Scene();
-  const cam=new THREE.PerspectiveCamera(45,1,.1,100);cam.position.set(0,0,10);
-  scene.add(new THREE.AmbientLight(0xfff2dd,.55));
-  const key=new THREE.DirectionalLight(0xffe6bb,.85);key.position.set(3,7,6);scene.add(key);
-  const warm=new THREE.PointLight(0xffca70,.5,14);warm.position.set(-2,3,4);scene.add(warm);
-
-  function fabricTex(){
-    const c=document.createElement('canvas');c.width=c.height=1024;const g=c.getContext('2d');
-    const gr=g.createLinearGradient(0,0,1024,1024);
-    gr.addColorStop(0,'#e8a463');gr.addColorStop(.55,'#cf8038');gr.addColorStop(1,'#a95f1e');
-    g.fillStyle=gr;g.fillRect(0,0,1024,1024);
-    for(let y=0;y<1024;y+=4){g.globalAlpha=(y%8?0.09:0.045);g.fillStyle=y%8?'#6b5124':'#fff';g.fillRect(0,y,1024,2)}
-    for(let x=0;x<1024;x+=4){g.globalAlpha=(x%8?0.055:0.03);g.fillStyle=x%8?'#6b5124':'#fff';g.fillRect(x,0,2,1024)}
-    g.globalAlpha=.06;g.strokeStyle='#5c421c';g.lineWidth=3;
-    for(let i=-1024;i<2048;i+=12){g.beginPath();g.moveTo(i,0);g.lineTo(i+1024,1024);g.stroke()}
-    for(let i=0;i<5200;i++){g.globalAlpha=.028;g.fillStyle=i%2?'#fff':'#7a5a26';
-      g.fillRect(Math.random()*1024,Math.random()*1024,1.5,1.5)}
-    g.globalAlpha=1;g.fillStyle='rgba(90,50,10,.2)';g.fillRect(0,984,1024,40);
-    g.strokeStyle='rgba(90,50,10,.55)';g.lineWidth=2;
-    g.beginPath();g.moveTo(0,984);g.lineTo(1024,984);g.stroke();
-    g.fillStyle='rgba(60,32,6,.9)';g.font='500 21px "JetBrains Mono",monospace';
-    for(let x=14;x<1024;x+=372){g.fillText('SHREE SANTRAM · MICRO PEACH · 112″',x,1011)}
-    const t=new THREE.CanvasTexture(c);
-    t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=8;t.encoding=THREE.sRGBEncoding;return t;
-  }
-  const geo=new THREE.PlaneGeometry(6.2,4.4,72,50);
-  const cloth=new THREE.Mesh(geo,new THREE.MeshPhongMaterial({
-    map:fabricTex(),specular:0x443617,shininess:12,side:THREE.DoubleSide,transparent:true}));
-  scene.add(cloth);
-  const pos=geo.attributes.position;
-  const gx=[],gy=[];
-  for(let i=0;i<pos.count;i++){gx.push(pos.getX(i));gy.push(pos.getY(i))}
-
-  function size(){R.setSize(innerWidth,innerHeight,false);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()}
-  size();addEventListener('resize',size);
-  let px=0,py=0;
-  addEventListener('pointermove',e=>{px=e.clientX/innerWidth-.5;py=e.clientY/innerHeight-.5},{passive:true});
-  addEventListener('deviceorientation',e=>{if(e.gamma!=null){px=e.gamma/90;py=e.beta/180}},{passive:true});
-
-  let t=0;
-  (function loop(){
-    requestAnimationFrame(loop);
-    if(document.hidden)return;
-    if(!reduced)t+=0.016;
-    const p=prog();
-    /* billow (0–.08) → dive into the room (.08–.30) → dissolve onto the bed (.26–.34) */
-    const dive=ss(band(p,.08,.30));
-    const fade=1-ss(band(p,.26,.34));
-    cloth.visible=fade>0.01;
-    if(cloth.visible){
-      const wind=1-dive*.55;
-      for(let i=0;i<pos.count;i++){
-        const x=gx[i],y=gy[i];
-        const lag=(y+2.2)/4.4;
-        pos.setXYZ(i,
-          x+Math.sin(t*.7+y*1.2)*.14*(1-dive),
-          y*.95+Math.sin(x*.7+t*.9)*.12+dive*lag*.8,
-          Math.sin(x*1.25+t*1.5)*.48*wind+Math.sin(y*1.9+t*1.05)*.24*wind);
-      }
-      pos.needsUpdate=true;geo.computeVertexNormals();
-      cloth.position.set(lerp(0,.4,dive)+px*.3, lerp(1.1,-2.9,dive), 0);
-      cloth.rotation.x=lerp(-.15,-1.05,dive);
-      cloth.rotation.z=lerp(.05,-.12,dive)+px*.1;
-      const sc=lerp(1,.42,dive);
-      cloth.scale.set(sc,sc,sc);
-      cloth.material.opacity=fade;
-      cam.lookAt(0,lerp(1.1,-1.5,dive)*.5,0);
-    }
-    R.render(scene,cam);
-  })();
-  }
-})();
 
 /* ============ MASTER SCROLL LOOP ============ */
 function onScroll(){
