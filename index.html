@@ -347,7 +347,15 @@ body{font-family:'Montserrat',sans-serif;
   const cv=document.getElementById('stage');
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(typeof THREE==='undefined')return;
-  let R;try{R=new THREE.WebGLRenderer({canvas:cv,alpha:true,antialias:true})}catch(e){return}
+  /* GPU context creation can fail transiently during heavy page load — retry patiently */
+  let R=null,__tries=0;
+  (function tryInit(){
+    try{R=new THREE.WebGLRenderer({canvas:cv,alpha:true,antialias:true})}
+    catch(e){R=null}
+    if(!R){if(++__tries<24)setTimeout(tryInit,1000);return}
+    boot();
+  })();
+  function boot(){
   R.setPixelRatio(Math.min(devicePixelRatio,2));
   R.outputEncoding=THREE.sRGBEncoding;
   R.toneMapping=THREE.ACESFilmicToneMapping;
@@ -710,6 +718,7 @@ body{font-family:'Montserrat',sans-serif;
     cam.lookAt(look);
     R.render(scene,cam);
   })();
+  } /* boot */
 })();
 
 /* ============ PROGRESS BAR ============ */
